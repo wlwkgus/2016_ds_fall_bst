@@ -2,7 +2,6 @@
 // Bongki Moon (bkmoon@snu.ac.kr), Sep/23/2014
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class BST { // Binary Search Tree implementation
 
@@ -10,6 +9,7 @@ public class BST { // Binary Search Tree implementation
   protected boolean OBSTified = false;
   protected int nodeCount = 0;
   protected Node rootNode = null;
+  protected float freqSum = this.sumFreq();
 
   public BST() {
 
@@ -23,6 +23,7 @@ public class BST { // Binary Search Tree implementation
       nodeCount++;
     }
     else insertHelper(key, this.rootNode);
+    freqSum = this.sumFreq();
   }
 
   private void insertHelper(String key, Node node){
@@ -48,14 +49,45 @@ public class BST { // Binary Search Tree implementation
     }
   }
 
+  public void insertFreq(String key, int freq) {
+    if (this.rootNode == null){
+      this.rootNode = new Node(key, freq);
+      nodeCount++;
+    }
+    else insertFreqHelper(key, this.rootNode, freq);
+    freqSum = this.sumFreq();
+  }
+
+  private void insertFreqHelper(String key, Node node, int freq){
+
+    if(key.compareTo(node.getKey()) < 0){
+      if(node.getLeftNode() == null){
+        this.nodeCount++;
+        node.setLeftNode(new Node(key, freq));
+      }
+      else insertFreqHelper(key, node.getLeftNode(), freq);
+    }
+
+    else if(key.compareTo(node.getKey()) == 0){
+      node.incFrequency(freq);
+    }
+
+    else {
+      if(node.getRightNode() == null){
+        node.setRightNode(new Node(key, freq));
+        this.nodeCount++;
+      }
+      else insertFreqHelper(key, node.getRightNode(), freq);
+    }
+  }
+
   public boolean find(String key) {
 
     return rootNode != null && findHelper(key, this.rootNode);
 
   }
 
-  private boolean findHelper(String key, Node node){
-
+  protected boolean findHelper(String key, Node node){
     node.incAccessCount();
 
     if(key.compareTo(node.getKey()) < 0){
@@ -78,7 +110,7 @@ public class BST { // Binary Search Tree implementation
     return sumFreqHelper(this.rootNode);
   }
 
-  private int sumFreqHelper(Node node){
+  protected int sumFreqHelper(Node node){
 
     if(node == null) return 0;
     return node.getFrequency() + sumFreqHelper(node.getLeftNode()) + sumFreqHelper(node.getRightNode());
@@ -89,7 +121,7 @@ public class BST { // Binary Search Tree implementation
     return sumProbesHelper(this.rootNode);
   }
 
-  private int sumProbesHelper(Node node){
+  protected int sumProbesHelper(Node node){
     if(node == null) return 0;
     return node.getAccessCount() + sumProbesHelper(node.getLeftNode()) + sumProbesHelper(node.getRightNode());
   }
@@ -98,7 +130,7 @@ public class BST { // Binary Search Tree implementation
     return sumWeightedPathHelper(this.rootNode, 0);
   }
 
-  private int sumWeightedPathHelper(Node node, int level){
+  protected int sumWeightedPathHelper(Node node, int level){
     if(node == null) return 0;
     return node.getFrequency() * (level + 1) +
             sumWeightedPathHelper(node.getLeftNode(), level + 1) +
@@ -109,7 +141,7 @@ public class BST { // Binary Search Tree implementation
     resetCountersHelper(this.rootNode);
   }
 
-  private void resetCountersHelper(Node node){
+  protected void resetCountersHelper(Node node){
     if(node == null) return;
     node.reset();
     resetCountersHelper(node.getLeftNode());
@@ -117,41 +149,107 @@ public class BST { // Binary Search Tree implementation
   }
 
 
-  public void nobst() { }	// Set NOBSTified to true.
+  public void nobst() {
+    ArrayList<Node> nodeListSortedByKey = new ArrayList<> ();
+    this.initializeNodeList(this.rootNode, nodeListSortedByKey);
 
+    BST nobst = new BST();
+    nobstInsertHelper(0, nodeCount-1, nobst, nodeListSortedByKey, (int) freqSum);
 
+    this.rootNode = nobst.rootNode;
+    NOBSTified = true;
+
+  }	// Set NOBSTified to true.
+
+  private void nobstInsertHelper(int from, int to, BST nobst, ArrayList<Node> nodeList, int frequencySum){
+    if(from == to){
+      for(int i=0; i<nodeList.get(from).getFrequency(); i++) nobst.insert(nodeList.get(from).getKey());
+//      nobst.insertFreq(nodeList.get(from).getKey(), nodeList.get(from).getFrequency());
+      return;
+    } else if (from > to) return;
+    int indexFrom = from, indexTo = to, middle;
+    int leftSum, rightSum;
+
+    while(true){
+      leftSum = 0;
+
+      if (indexFrom + 1 == indexTo){
+        middle = indexFrom;
+        for(int i=from; i<middle; i++) leftSum += nodeList.get(i).getFrequency();
+        rightSum = frequencySum - leftSum - nodeList.get(middle).getFrequency();
+        int newLeftSum = leftSum + nodeList.get(middle).getFrequency();
+        int newRightSum = frequencySum - newLeftSum - nodeList.get(middle+1).getFrequency();
+        if(Math.abs(((double)(leftSum - rightSum))) <= Math.abs((double)(newLeftSum - newRightSum))){
+          break;
+        } else{
+          middle = indexTo;
+          leftSum = newLeftSum;
+          rightSum = newRightSum;
+          break;
+        }
+      }
+
+      middle = (indexFrom + indexTo + 1) / 2;
+      for(int i=from; i<middle; i++) leftSum += nodeList.get(i).getFrequency();
+      rightSum = frequencySum - leftSum - nodeList.get(middle).getFrequency();
+
+      if(leftSum < rightSum){
+        indexFrom = middle;
+      } else if (leftSum > rightSum){
+        indexTo = middle;
+      } else{
+        break;
+      }
+    }
+
+    for (int i = 0; i < nodeList.get(middle).getFrequency(); i++) nobst.insert(nodeList.get(middle).getKey());
+//    nobst.insertFreq(nodeList.get(middle).getKey(), nodeList.get(middle).getFrequency());
+    nobstInsertHelper(from, middle - 1, nobst, nodeList, leftSum);
+    nobstInsertHelper(middle + 1, to, nobst, nodeList, rightSum);
+
+  }
 
 
   public void obst() {
-    HashMap<String, Float> valueMemoizeTable = new HashMap<String, Float> ();
-    HashMap<String, ArrayList<Integer>> keyListMemoizeTable = new HashMap<String, ArrayList<Integer>> ();
-    int freqSum = this.sumFreq();
+    float[][] valueMemoizeTable = new float[nodeCount+1][nodeCount+1];
+    int[][] rootMemoizeTable = new int[nodeCount+1][nodeCount+1];
+    float[][] freqSumMemoizeTable = new float[nodeCount+1][nodeCount+1];
     float maxFloat = 999999999;
 
     ArrayList<Node> nodeListSortedByKey = new ArrayList<> ();
     this.initializeNodeList(this.rootNode, nodeListSortedByKey);
 
+    //    initialize Table
+    for(int i=0; i< nodeCount; i++){
+      for(int j=0; j< nodeCount; j++){
+        if(i == j){
+          valueMemoizeTable[i][j] = (float) nodeListSortedByKey.get(i).getFrequency() / freqSum;
+          rootMemoizeTable[i][j] = i;
+        }
+        if(i < j) valueMemoizeTable[i][j] = maxFloat;
+      }
+    }
+
 //    Bottom up DP
 
     for(int size=1; size<=nodeListSortedByKey.size(); size++){ // for all list size
-      int j = size - 1;
-      for(int i=0; i<size; i++){ // select i, j
-        if (i == j) {
-          valueMemoizeTable.put(i + "_" + j, (float) nodeListSortedByKey.get(i).getFrequency() / freqSum);
-          continue;
-        }
-        valueMemoizeTable.put(i + "_" + j, maxFloat);
+      for(int i=0; i<=nodeListSortedByKey.size() - size; i++){ // select i, j
+        int j = i + size - 1;
+
+        float temp = maxFloat;
+
         for(int r=i; r <= j; r++){
-          float prevValue = getValueFromValueMemoizeTable(i, j, valueMemoizeTable);
-          float temp = Math.min(
-                  getValueFromValueMemoizeTable(i, j, valueMemoizeTable),
+          float prevValue = temp;
+          temp = Math.min(
+                  temp,
                   getValueFromValueMemoizeTable(i, r-1, valueMemoizeTable)
                           + getValueFromValueMemoizeTable(r+1, j, valueMemoizeTable)
-                          + getFreqSumByRange(i, j, nodeListSortedByKey) / freqSum
+                          + getFreqSumByRange(i, j, nodeListSortedByKey, freqSumMemoizeTable) / freqSum
           );
+
           if (temp != prevValue){
-            valueMemoizeTable.put(i + "_" + j, temp);
-            keyListMemoizeTable.put(i + "_" + j, )
+            valueMemoizeTable[i][j] = temp;
+            rootMemoizeTable[i][j] = r;
           }
 
         }
@@ -159,18 +257,38 @@ public class BST { // Binary Search Tree implementation
       }
     }
 
+    BST obst = new BST();
+    obstInsertHelper(0, nodeCount - 1, rootMemoizeTable, nodeListSortedByKey, obst);
+
+    this.rootNode = obst.rootNode;
+    OBSTified = true;
+
   }	// Set OBSTified to true.
 
-  private float getValueFromValueMemoizeTable(int fromIndex, int toIndex, HashMap<String, Float> valueMemoizeTable){
-    if(fromIndex > toIndex) return 0;
-    return valueMemoizeTable.get(fromIndex + "_" + toIndex);
+  private void obstInsertHelper(int from, int to, int[][] rootMemoizeTable, ArrayList<Node> nodeListSortedByKey, BST obst){
+    if (from > to) return;
+    int rootNodeIndex = rootMemoizeTable[from][to];
+    for(int i=0; i < nodeListSortedByKey.get(rootNodeIndex).getFrequency(); i++){
+      obst.insert(nodeListSortedByKey.get(rootNodeIndex).getKey());
+    }
+//    obst.insertFreq(nodeListSortedByKey.get(rootNodeIndex).getKey(), nodeListSortedByKey.get(from).getFrequency());
+    obstInsertHelper(from, rootNodeIndex - 1, rootMemoizeTable, nodeListSortedByKey, obst);
+    obstInsertHelper(rootNodeIndex + 1, to, rootMemoizeTable, nodeListSortedByKey, obst);
   }
 
-  private float getFreqSumByRange(int fromIndex, int toIndex, ArrayList<Node> nodeListSortedByKey){
+
+  private float getValueFromValueMemoizeTable(int fromIndex, int toIndex, float[][] valueMemoizeTable){
+    if (toIndex == -1) return 0;
+    return valueMemoizeTable[fromIndex][toIndex];
+  }
+
+  private float getFreqSumByRange(int fromIndex, int toIndex, ArrayList<Node> nodeListSortedByKey, float[][] freqSumMemiozeTable){
+    if (freqSumMemiozeTable[fromIndex][toIndex] != 0) return freqSumMemiozeTable[fromIndex][toIndex];
     float freqSum = 0;
     for(int i=fromIndex; i <= toIndex; i++){
       freqSum += nodeListSortedByKey.get(i).getFrequency();
     }
+    freqSumMemiozeTable[fromIndex][toIndex] = freqSum;
     return freqSum;
   }
 
@@ -190,21 +308,33 @@ public class BST { // Binary Search Tree implementation
   private void printHelper(Node node){
     if (node == null) return;
     printHelper(node.getLeftNode());
-    System.out.println(node.getKey() + ":" + node.getFrequency() + ":" + node.getAccessCount());
+    System.out.println("[" + node.getKey() + ":" + node.getFrequency() + ":" + node.getAccessCount() + "]");
     printHelper(node.getRightNode());
   }
 
   public static void main(String args[]){
     BST bst = new BST();
-    bst.insert("1");
-    bst.insert("1234");
-    bst.insert("1234");
-    bst.insert("4444");
-    bst.insert("3333");
+    bst.insert("a");
+    bst.insert("b");
+    bst.insert("c");
+    bst.insert("d");
+    bst.insert("b");
+    bst.insert("c");
+    bst.insert("d");
+    bst.insert("c");
+    bst.insert("d");
+    bst.insert("c");
+//    for(int i=0; i<80000; i++){
+//      bst.insert(Integer.toString((int) (Math.random() * 2000)));
+//    }
     bst.print();
-    bst.obst();
+    System.out.println();
+    bst.nobst();
+    bst.print();
+    System.out.println(bst.freqSum);
+    System.out.println(bst.rootNode.getRightNode().getKey());
+    System.out.println(bst.sumWeightedPath());
 
-    HashMap<String, Integer> valueMemoizeTable = new HashMap<String, Integer> ();
 
   }
 }

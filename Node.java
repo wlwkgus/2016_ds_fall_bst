@@ -11,6 +11,35 @@ public class Node {
     public Node(String key){
         this.key = key;
     }
+
+    public Node(String key, int freq){
+        this.key = key;
+        this.frequency = freq;
+    }
+
+    public Node(){
+
+    }
+
+    public void setNode(Node node){
+        this.setLeftNode(getNodeCopy(node.getLeftNode()));
+        this.setRightNode(getNodeCopy(node.getRightNode()));
+        this.setKey(node.getKey());
+        this.frequency = node.frequency;
+        this.accessCount = node.accessCount;
+    }
+
+    public static Node getNodeCopy(Node node){
+        if(node == null) return null;
+        Node temp = new Node();
+        temp.setKey(node.getKey());
+        temp.setLeftNode(getNodeCopy(node.getLeftNode()));
+        temp.setRightNode(getNodeCopy(node.getRightNode()));
+        temp.setFrequency(node.getFrequency());
+        temp.accessCount = node.getAccessCount();
+        return temp;
+    }
+
     public void setRightNode(Node node){
         this.rightNode = node;
     }
@@ -25,15 +54,19 @@ public class Node {
 
     public void incFrequency() {frequency++;}
 
+    public void incFrequency(int freq) {frequency += freq;}
+
     public void incAccessCount() {accessCount++;}
 
     public int getFrequency() {return frequency;}
 
+    public void setFrequency(int freq){this.frequency = freq;}
+
     public int getAccessCount() {return accessCount;}
 
     public void reset(){
-        this.frequency = 1;
-        this.accessCount = 1;
+        this.frequency = 0;
+        this.accessCount = 0;
     }
 
     public String getKey(){
