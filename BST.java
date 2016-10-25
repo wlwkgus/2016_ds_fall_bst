@@ -2,10 +2,8 @@
 // Bongki Moon (bkmoon@snu.ac.kr), Sep/23/2014
 
 import java.util.ArrayList;
-import java.lang.management.*;
 
 public class BST { // Binary Search Tree implementation
-  public static ThreadMXBean TMB;
 
   protected boolean NOBSTified = false;
   protected boolean OBSTified = false;
@@ -229,8 +227,6 @@ public class BST { // Binary Search Tree implementation
 
 
   public void obst() {
-    TMB = ManagementFactory.getThreadMXBean();
-    long cputime = TMB.getCurrentThreadCpuTime();
     int[][] valueMemoizeTable = new int[nodeCount+1][nodeCount+1];
     int[][] rootMemoizeTable = new int[nodeCount+1][nodeCount+1];
     int[][] freqSumMemoizeTable = new int[nodeCount+1][nodeCount+1];
@@ -245,10 +241,6 @@ public class BST { // Binary Search Tree implementation
       rootMemoizeTable[i][i] = i;
     }
 
-    cputime = TMB.getCurrentThreadCpuTime() - cputime;
-    System.out.println("CPU time :::: "
-            + (cputime/1000000)+" millisec");
-    long cputime_2 = TMB.getCurrentThreadCpuTime();
 
 //    Bottom up DP
 
@@ -275,9 +267,6 @@ public class BST { // Binary Search Tree implementation
       }
     }
 
-    cputime_2 = TMB.getCurrentThreadCpuTime() - cputime_2;
-    System.out.println("CPU time :::: "
-            +(cputime_2/1000000)+" millisec");
 
     BST obst = new BST();
     obstInsertHelper(0, nodeCount - 1, rootMemoizeTable, nodeListSortedByKey, obst);
