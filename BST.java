@@ -244,17 +244,19 @@ public class BST { // Binary Search Tree implementation
 
 //    Bottom up DP
 
-    for(int size=1; size<=nodeListSortedByKey.size(); size++){ // for all list size
-      for(int i=0; i<=nodeListSortedByKey.size() - size; i++){ // select i, j
-        int j = i + size - 1;
-
+    for(int i=nodeListSortedByKey.size() - 1; i>=0 ; i--){ // select i, j
+      for(int j=i; j<= nodeListSortedByKey.size()-1; j++){
         int temp = maxInt;
         int newResult;
-
         for(int r=i; r <= j; r++){
           newResult = getValueFromValueMemoizeTable(i, r-1, valueMemoizeTable)
                   + getValueFromValueMemoizeTable(r+1, j, valueMemoizeTable)
                   + getFreqSumByRange(i, j, nodeListSortedByKey, freqSumMemoizeTable);
+//          if(i == 1){
+//            System.out.println("i:" + i + " " + "r:" + r);
+//            System.out.println(newResult);
+//            System.out.println(temp);
+//          }
 
           if (temp > newResult){
             temp = newResult;
@@ -263,11 +265,13 @@ public class BST { // Binary Search Tree implementation
           }
 
         }
-
       }
+
     }
 
-
+//    System.out.println("this is it!");
+//    System.out.println(valueMemoizeTable[1][2]);
+//    System.out.println(rootMemoizeTable[1][2]);
     BST obst = new BST();
     obstInsertHelper(0, nodeCount - 1, rootMemoizeTable, nodeListSortedByKey, obst);
 
@@ -295,11 +299,12 @@ public class BST { // Binary Search Tree implementation
 
   private int getFreqSumByRange(int fromIndex, int toIndex, ArrayList<Node> nodeListSortedByKey, int[][] freqSumMemiozeTable){
     if (freqSumMemiozeTable[fromIndex][toIndex] != 0) return freqSumMemiozeTable[fromIndex][toIndex];
+    if (fromIndex > toIndex) return 0;
 //    for(int i=fromIndex; i <= toIndex; i++){
 //      freqSum += nodeListSortedByKey.get(i).getFrequency();
 //    }
-    int freqSum = getFreqSumFromFreqSumMemoizeTable(fromIndex, toIndex - 1, freqSumMemiozeTable)
-            + nodeListSortedByKey.get(toIndex).getFrequency();
+    int freqSum = getFreqSumFromFreqSumMemoizeTable(fromIndex + 1, toIndex, freqSumMemiozeTable)
+            + nodeListSortedByKey.get(fromIndex).getFrequency();
     freqSumMemiozeTable[fromIndex][toIndex] = freqSum;
     return freqSum;
   }
@@ -346,7 +351,7 @@ public class BST { // Binary Search Tree implementation
 //    }
     bst.print();
     System.out.println();
-    bst.nobst();
+    bst.obst();
     bst.print();
     System.out.println(bst.freqSum);
     System.out.println(bst.rootNode.getRightNode().getKey());
