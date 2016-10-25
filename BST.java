@@ -250,7 +250,7 @@ public class BST { // Binary Search Tree implementation
       for(int j=i; j<= nodeListSortedByKey.size()-1; j++){
         int temp = maxInt;
         int newResult;
-        for(int r=i; r <= j; r++){
+        for(int r= i==j? i : rootMemoizeTable[i][j-1]; r <= (i==j? i : rootMemoizeTable[i+1][j]); r++){
           newResult = getValueFromValueMemoizeTable(i, r-1, valueMemoizeTable)
                   + getValueFromValueMemoizeTable(r+1, j, valueMemoizeTable)
                   + getFreqSumByRange(i, j, nodeListSortedByKey, freqSumMemoizeTable);
