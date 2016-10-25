@@ -2,8 +2,10 @@
 // Bongki Moon (bkmoon@snu.ac.kr), Sep/23/2014
 
 import java.util.ArrayList;
+import java.lang.management.*;
 
 public class BST { // Binary Search Tree implementation
+  public static ThreadMXBean TMB;
 
   protected boolean NOBSTified = false;
   protected boolean OBSTified = false;
@@ -227,24 +229,26 @@ public class BST { // Binary Search Tree implementation
 
 
   public void obst() {
-    float[][] valueMemoizeTable = new float[nodeCount+1][nodeCount+1];
+    TMB = ManagementFactory.getThreadMXBean();
+    long cputime = TMB.getCurrentThreadCpuTime();
+    int[][] valueMemoizeTable = new int[nodeCount+1][nodeCount+1];
     int[][] rootMemoizeTable = new int[nodeCount+1][nodeCount+1];
-    float[][] freqSumMemoizeTable = new float[nodeCount+1][nodeCount+1];
-    float maxFloat = 999999999;
+    int[][] freqSumMemoizeTable = new int[nodeCount+1][nodeCount+1];
+    int maxInt = 999999999;
 
     ArrayList<Node> nodeListSortedByKey = new ArrayList<> ();
     this.initializeNodeList(this.rootNode, nodeListSortedByKey);
 
     //    initialize Table
     for(int i=0; i< nodeCount; i++){
-      for(int j=0; j< nodeCount; j++){
-        if(i == j){
-          valueMemoizeTable[i][j] = (float) nodeListSortedByKey.get(i).getFrequency() / freqSum;
-          rootMemoizeTable[i][j] = i;
-        }
-        if(i < j) valueMemoizeTable[i][j] = maxFloat;
-      }
+      valueMemoizeTable[i][i] = nodeListSortedByKey.get(i).getFrequency();
+      rootMemoizeTable[i][i] = i;
     }
+
+    cputime = TMB.getCurrentThreadCpuTime() - cputime;
+    System.out.println("CPU time :::: "
+            + (cputime/1000000)+" millisec");
+    long cputime_2 = TMB.getCurrentThreadCpuTime();
 
 //    Bottom up DP
 
@@ -252,18 +256,16 @@ public class BST { // Binary Search Tree implementation
       for(int i=0; i<=nodeListSortedByKey.size() - size; i++){ // select i, j
         int j = i + size - 1;
 
-        float temp = maxFloat;
+        int temp = maxInt;
+        int newResult;
 
         for(int r=i; r <= j; r++){
-          float prevValue = temp;
-          temp = Math.min(
-                  temp,
-                  getValueFromValueMemoizeTable(i, r-1, valueMemoizeTable)
-                          + getValueFromValueMemoizeTable(r+1, j, valueMemoizeTable)
-                          + getFreqSumByRange(i, j, nodeListSortedByKey, freqSumMemoizeTable) / freqSum
-          );
+          newResult = getValueFromValueMemoizeTable(i, r-1, valueMemoizeTable)
+                  + getValueFromValueMemoizeTable(r+1, j, valueMemoizeTable)
+                  + getFreqSumByRange(i, j, nodeListSortedByKey, freqSumMemoizeTable);
 
-          if (temp != prevValue){
+          if (temp > newResult){
+            temp = newResult;
             valueMemoizeTable[i][j] = temp;
             rootMemoizeTable[i][j] = r;
           }
@@ -272,6 +274,10 @@ public class BST { // Binary Search Tree implementation
 
       }
     }
+
+    cputime_2 = TMB.getCurrentThreadCpuTime() - cputime_2;
+    System.out.println("CPU time :::: "
+            +(cputime_2/1000000)+" millisec");
 
     BST obst = new BST();
     obstInsertHelper(0, nodeCount - 1, rootMemoizeTable, nodeListSortedByKey, obst);
@@ -293,19 +299,25 @@ public class BST { // Binary Search Tree implementation
   }
 
 
-  private float getValueFromValueMemoizeTable(int fromIndex, int toIndex, float[][] valueMemoizeTable){
-    if (toIndex == -1) return 0;
+  private int getValueFromValueMemoizeTable(int fromIndex, int toIndex, int[][] valueMemoizeTable){
+    if (toIndex < fromIndex) return 0;
     return valueMemoizeTable[fromIndex][toIndex];
   }
 
-  private float getFreqSumByRange(int fromIndex, int toIndex, ArrayList<Node> nodeListSortedByKey, float[][] freqSumMemiozeTable){
+  private int getFreqSumByRange(int fromIndex, int toIndex, ArrayList<Node> nodeListSortedByKey, int[][] freqSumMemiozeTable){
     if (freqSumMemiozeTable[fromIndex][toIndex] != 0) return freqSumMemiozeTable[fromIndex][toIndex];
-    float freqSum = 0;
-    for(int i=fromIndex; i <= toIndex; i++){
-      freqSum += nodeListSortedByKey.get(i).getFrequency();
-    }
+//    for(int i=fromIndex; i <= toIndex; i++){
+//      freqSum += nodeListSortedByKey.get(i).getFrequency();
+//    }
+    int freqSum = getFreqSumFromFreqSumMemoizeTable(fromIndex, toIndex - 1, freqSumMemiozeTable)
+            + nodeListSortedByKey.get(toIndex).getFrequency();
     freqSumMemiozeTable[fromIndex][toIndex] = freqSum;
     return freqSum;
+  }
+
+  private int getFreqSumFromFreqSumMemoizeTable(int fromIndex, int toIndex, int[][] freqSumMemoizeTable){
+    if(fromIndex > toIndex) return 0;
+    return freqSumMemoizeTable[fromIndex][toIndex];
   }
 
   private void initializeNodeList(Node node, ArrayList<Node> nodeList){

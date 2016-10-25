@@ -10,7 +10,7 @@ public class AVL extends BST
     }
     else avlInsertHelper(key, this.rootNode);
 
-    freqSum = this.sumFreq();
+    freqSum = freqSum + 1;
   }
 
   private void avlInsertHelper(String key, Node node){
