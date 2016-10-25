@@ -22,31 +22,40 @@ public class BST { // Binary Search Tree implementation
       this.rootNode = new Node(key);
       nodeCount++;
     }
-    else insertHelper(key, this.rootNode);
-    freqSum = this.sumFreq();
-  }
+    else{
+      Node node = this.rootNode;
 
-  private void insertHelper(String key, Node node){
+      while(true){
+        if(key.compareTo(node.getKey()) < 0){
+          if(node.getLeftNode() == null){
+            this.nodeCount++;
+            node.setLeftNode(new Node(key));
+            break;
+          }
+          else{
+            node = node.getLeftNode();
+          }
+        }
 
-    if(key.compareTo(node.getKey()) < 0){
-      if(node.getLeftNode() == null){
-        this.nodeCount++;
-        node.setLeftNode(new Node(key));
+        else if(key.compareTo(node.getKey()) == 0){
+          node.incFrequency();
+          break;
+        }
+
+        else {
+          if(node.getRightNode() == null){
+            node.setRightNode(new Node(key));
+            this.nodeCount++;
+            break;
+          }
+          else{
+            node = node.getRightNode();
+          }
+        }
       }
-      else insertHelper(key, node.getLeftNode());
-    }
 
-    else if(key.compareTo(node.getKey()) == 0){
-      node.incFrequency();
     }
-
-    else {
-      if(node.getRightNode() == null){
-        node.setRightNode(new Node(key));
-        this.nodeCount++;
-      }
-      else insertHelper(key, node.getRightNode());
-    }
+    freqSum = this.freqSum + 1;
   }
 
   public void insertFreq(String key, int freq) {
@@ -54,31 +63,38 @@ public class BST { // Binary Search Tree implementation
       this.rootNode = new Node(key, freq);
       nodeCount++;
     }
-    else insertFreqHelper(key, this.rootNode, freq);
-    freqSum = this.sumFreq();
-  }
+    else{
+      Node node = this.rootNode;
+      while(true){
+        if(key.compareTo(node.getKey()) < 0){
+          if(node.getLeftNode() == null){
+            this.nodeCount++;
+            node.setLeftNode(new Node(key, freq));
+            break;
+          }
+          else{
+            node = node.getLeftNode();
+          }
+        }
 
-  private void insertFreqHelper(String key, Node node, int freq){
+        else if(key.compareTo(node.getKey()) == 0){
+          node.incFrequency(freq);
+          break;
+        }
 
-    if(key.compareTo(node.getKey()) < 0){
-      if(node.getLeftNode() == null){
-        this.nodeCount++;
-        node.setLeftNode(new Node(key, freq));
+        else {
+          if(node.getRightNode() == null){
+            node.setRightNode(new Node(key, freq));
+            this.nodeCount++;
+            break;
+          }
+          else{
+            node = node.getRightNode();
+          }
+        }
       }
-      else insertFreqHelper(key, node.getLeftNode(), freq);
     }
-
-    else if(key.compareTo(node.getKey()) == 0){
-      node.incFrequency(freq);
-    }
-
-    else {
-      if(node.getRightNode() == null){
-        node.setRightNode(new Node(key, freq));
-        this.nodeCount++;
-      }
-      else insertFreqHelper(key, node.getRightNode(), freq);
-    }
+    freqSum = this.freqSum + freq;
   }
 
   public boolean find(String key) {
