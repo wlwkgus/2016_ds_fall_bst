@@ -163,8 +163,8 @@ public class BST { // Binary Search Tree implementation
 
   private void nobstInsertHelper(int from, int to, BST nobst, ArrayList<Node> nodeList, int frequencySum){
     if(from == to){
-      for(int i=0; i<nodeList.get(from).getFrequency(); i++) nobst.insert(nodeList.get(from).getKey());
-//      nobst.insertFreq(nodeList.get(from).getKey(), nodeList.get(from).getFrequency());
+//      for(int i=0; i<nodeList.get(from).getFrequency(); i++) nobst.insert(nodeList.get(from).getKey());
+      nobst.insertFreq(nodeList.get(from).getKey(), nodeList.get(from).getFrequency());
       return;
     } else if (from > to) return;
     int indexFrom = from, indexTo = to, middle;
@@ -202,8 +202,8 @@ public class BST { // Binary Search Tree implementation
       }
     }
 
-    for (int i = 0; i < nodeList.get(middle).getFrequency(); i++) nobst.insert(nodeList.get(middle).getKey());
-//    nobst.insertFreq(nodeList.get(middle).getKey(), nodeList.get(middle).getFrequency());
+//    for (int i = 0; i < nodeList.get(middle).getFrequency(); i++) nobst.insert(nodeList.get(middle).getKey());
+    nobst.insertFreq(nodeList.get(middle).getKey(), nodeList.get(middle).getFrequency());
     nobstInsertHelper(from, middle - 1, nobst, nodeList, leftSum);
     nobstInsertHelper(middle + 1, to, nobst, nodeList, rightSum);
 
@@ -268,10 +268,10 @@ public class BST { // Binary Search Tree implementation
   private void obstInsertHelper(int from, int to, int[][] rootMemoizeTable, ArrayList<Node> nodeListSortedByKey, BST obst){
     if (from > to) return;
     int rootNodeIndex = rootMemoizeTable[from][to];
-    for(int i=0; i < nodeListSortedByKey.get(rootNodeIndex).getFrequency(); i++){
-      obst.insert(nodeListSortedByKey.get(rootNodeIndex).getKey());
-    }
-//    obst.insertFreq(nodeListSortedByKey.get(rootNodeIndex).getKey(), nodeListSortedByKey.get(from).getFrequency());
+//    for(int i=0; i < nodeListSortedByKey.get(rootNodeIndex).getFrequency(); i++){
+//      obst.insert(nodeListSortedByKey.get(rootNodeIndex).getKey());
+//    }
+    obst.insertFreq(nodeListSortedByKey.get(rootNodeIndex).getKey(), nodeListSortedByKey.get(rootNodeIndex).getFrequency());
     obstInsertHelper(from, rootNodeIndex - 1, rootMemoizeTable, nodeListSortedByKey, obst);
     obstInsertHelper(rootNodeIndex + 1, to, rootMemoizeTable, nodeListSortedByKey, obst);
   }
