@@ -244,6 +244,8 @@ public class BST { // Binary Search Tree implementation
 
 //    Bottom up DP
 
+    System.out.println("System constructing");
+
     for(int i=nodeListSortedByKey.size() - 1; i>=0 ; i--){ // select i, j
       for(int j=i; j<= nodeListSortedByKey.size()-1; j++){
         int temp = maxInt;
@@ -268,6 +270,8 @@ public class BST { // Binary Search Tree implementation
       }
 
     }
+
+    System.out.println("construct finish");
 
 //    System.out.println("this is it!");
 //    System.out.println(valueMemoizeTable[1][2]);
